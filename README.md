@@ -28,7 +28,7 @@
 `√ Retrieval`
 - service discovery system으로 부터 monitoring 대상 목록을 받아오고, Exporter로 부터 주기적으로 그 대상으로 부터 metric을 수집하는 module
 
-`√ Save`
+`√ Storage`
 - 수집된 정보는 prometheus내의 memory와 local disk에 저장, 스케일링이 불가한 단점 존재
 - 확장이 불가능하고, 저장 용량이 부족하면 디스크 용량을 늘리는 것 밖에 방안이 없다
 - 구조상 HA를 위한 이중화나 clustering이 불가
@@ -36,3 +36,56 @@
 `√ Serving`
 - 저장된 metric은 `PromQL`을 이용하여 조회하고, 이를 외부 API나 prometheus Web Console을 이용하여 서빙이 가능
 
+
+## Run (using [![Sources](https://img.shields.io/badge/출처-Katacoda-yellow)](https://www.katacoda.com/))
+
+#### Step 1 - Configure Prometheus (prometheus.yml)
+
+```java
+global:
+  scrape_interval:     15s // target system으로 부터 metric을 읽어오는 주기
+  evaluation_interval: 15s // alert을 보낼지 말지 metric을 보고 판단하는 주기
+
+scrape_configs:	// 데이타 수집 대상과 방법을 정의
+  - job_name: 'prometheus' // 대상 그룹에서 metric을 수집해오는 내용을 정의
+
+    static_configs:
+      - targets: ['127.0.0.1:9090', '127.0.0.1:9100'] // 두 개의 target에서 metric을 수집하도록 하나의 job을 정의 (9090: Prometheus itself, 9100: Node Exporter Prometheus process)
+        labels:
+          group: 'prometheus'
+```
+
+#### Step 2 - Start Prometheus Server & Node Exporter
+
+- docker image를 이용한 prometheus server 기동
+```bash
+> docker run -d --net=host \
+    -v /root/prometheus.yml:/etc/prometheus/prometheus.yml \
+    --name prometheus-server \
+    prom/prometheus
+```
+
+- docker image를 이용한 node exporter 기동 (image : quay.io/prometheus/node-exporter)
+```bash
+> docker run -d \
+  -v "/proc:/host/proc" \
+  -v "/sys:/host/sys" \
+  -v "/:/rootfs" \
+  --net="host" \
+  --name=prometheus \
+  quay.io/prometheus/node-exporter:v0.13.0 \
+    -collector.procfs /host/proc \
+    -collector.sysfs /host/sys \
+    -collector.filesystem.ignored-mount-points "^/(sys|proc|dev|host|etc)($|/)"
+```
+
+- node exporter 작동 확인
+```bash
+> curl localhost:9100/metrics
+```
+
+#### Step 3 - View Metrics
+
+- `http://{Prometheus Server ip}:9090` 에 접속하면, dashboard가 나오는데, 검색 query 부분에 보고 싶은 metric에 대한 query를 넣으면, table이나 graph 형태로 볼 수 있다.
+
+![monitoring](images/monitoring.png)
