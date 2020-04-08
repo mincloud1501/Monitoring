@@ -9,7 +9,7 @@
 
 ## Basic Architecture
 
-![architeture](images/architeture.png)
+![architecture](images/architecture.png)
 
 `√ Metric Collect`
 - MySQL이나, Tomcat 또는 VM 과 같은 모니터링 대상에서 metric을 prometheus에 전송하기 위해 `Exporter`를 사용한다.
