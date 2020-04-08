@@ -36,6 +36,7 @@
 `√ Serving`
 - 저장된 metric은 `PromQL`을 이용하여 조회하고, 이를 외부 API나 prometheus Web Console을 이용하여 서빙이 가능
 
+---
 
 ## ■ Run (using [![Sources](https://img.shields.io/badge/출처-Katacoda-yellow)](https://www.katacoda.com/))
 
@@ -109,11 +110,11 @@ scrape_configs:	// 데이타 수집 대상과 방법을 정의
 
 ```java
 ...
-	targets: ['127.0.0.1:9090', '127.0.0.1:9100', '127.0.0.1:9323'] // 9323 is the Docker Metrics port
+targets: ['127.0.0.1:9090', '127.0.0.1:9100', '127.0.0.1:9323'] // 9323 is the Docker Metrics port
 ...
 ```
 
-### Step 5- Generate Metrics
+### Step 5 - Generate Metrics
 
 ```bash
 > docker run -d katacoda/docker-http-server:latest
@@ -122,3 +123,29 @@ scrape_configs:	// 데이타 수집 대상과 방법을 정의
 - `http://{Prometheus Server ip}:9323` 에 접속
 
 ![monitoring](images/monitoring1.png)
+
+---
+
+### Step 6 - Start Grafana & Login (admin/admin)
+
+```bash
+> cd ~ && curl -L -o ~/grafana-4.5.1.linux-x64.tar.gz https://s3-us-west-2.amazonaws.com/grafana-releases/release/grafana-4.5.1.linux-x64.tar.gz && tar -zxvf ~/grafana-4.5.1.linux-x64.tar.gz
+
+> cd ~/grafana-4.5.1/bin/ && ./grafana-server
+```
+
+### Step 7 - Import Dashboard [![Sources](https://img.shields.io/badge/출처-Katacoda-yellow)](https://www.katacoda.com/courses/prometheus/creating-dashboards-with-grafana)
+
+- URL을 이용하여 Prometheus server에 Data Source를 추가하여 Prometheus server와 grafana 연결
+
+![datasource](images/add_data_source.png)
+
+- Create your first dash board > Panel Title > Edit > Metric > cpu_node 입력
+
+![grafana](images/grafana.png)
+
+- Prometheus node_exporter에 의해서 제공되는 metric을 monitoring할 수 있는 dashboard를 import하여 사용 가능
+- dashboard 설정을 json 파일로 upload할 수 있지만, grafana dashboard website [![Sources](https://img.shields.io/badge/출처-Katacoda-yellow)](https://grafana.com/dashboards) 에 있는 경우에는 아래 처럼 URL이나 dashboard id (ex: `22`)를 넣으면 된다.
+
+![monitoring](images/monitoring2.png)
+
