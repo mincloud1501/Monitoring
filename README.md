@@ -7,7 +7,7 @@
 - 넓은 오픈 소스 생태계를 기반으로 많은 시스템을 모니터링할 수 있는 다양한 플러그인을 가지고 있다. 
 - 특히 k8s의 메인 모니터링 시스템으로 많이 사용되면서 요즘 특히 더 주목을 받고 있다.
 
-## Basic Architecture
+## ■ Basic Architecture
 
 ![architecture](images/architecture.png)
 
@@ -37,9 +37,9 @@
 - 저장된 metric은 `PromQL`을 이용하여 조회하고, 이를 외부 API나 prometheus Web Console을 이용하여 서빙이 가능
 
 
-## Run (using [![Sources](https://img.shields.io/badge/출처-Katacoda-yellow)](https://www.katacoda.com/))
+## ■ Run (using [![Sources](https://img.shields.io/badge/출처-Katacoda-yellow)](https://www.katacoda.com/))
 
-#### Step 1 - Configure Prometheus (prometheus.yml)
+### Step 1 - Configure Prometheus (prometheus.yml)
 
 ```java
 global:
@@ -55,7 +55,7 @@ scrape_configs:	// 데이타 수집 대상과 방법을 정의
           group: 'prometheus'
 ```
 
-#### Step 2 - Start Prometheus Server & Node Exporter
+### Step 2 - Start Prometheus Server & Node Exporter
 
 - docker image를 이용한 prometheus server 기동
 ```bash
@@ -84,8 +84,41 @@ scrape_configs:	// 데이타 수집 대상과 방법을 정의
 > curl localhost:9100/metrics
 ```
 
-#### Step 3 - View Metrics
+### Step 3 - View Metrics
 
 - `http://{Prometheus Server ip}:9090` 에 접속하면, dashboard가 나오는데, 검색 query 부분에 보고 싶은 metric에 대한 query를 넣으면, table이나 graph 형태로 볼 수 있다.
 
 ![monitoring](images/monitoring.png)
+
+### Step 4 - Enable Metrics
+
+- metric 기능을 활성화하고 localhost:9323에서 수신할 metric 주소를 정의하는 새 experimental flag를 활성화한다.
+
+```bash
+> echo '{ "metrics-addr" : "127.0.0.1:9323", "experimental" : true }' > /etc/docker/daemon.json
+> systemctl restart docker
+```
+
+- docker가 시작되면 metric endpoint에 access할 수 있다.
+
+```bash
+> curl localhost:9323/metrics
+```
+
+- prometheus.yml에 target add
+
+```java
+...
+	targets: ['127.0.0.1:9090', '127.0.0.1:9100', '127.0.0.1:9323'] // 9323 is the Docker Metrics port
+...
+```
+
+### Step 5- Generate Metrics
+
+```bash
+> docker run -d katacoda/docker-http-server:latest
+```
+
+- `http://{Prometheus Server ip}:9323` 에 접속
+
+![monitoring](images/monitoring1.png)
